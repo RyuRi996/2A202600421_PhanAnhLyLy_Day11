@@ -2,14 +2,32 @@
 Lab 11 — Configuration & API Key Setup
 """
 import os
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
 
+# Inject OpenAI Proxy transparently
+from . import openai_proxy
+openai_proxy.patch_genai_for_openai()
 
 def setup_api_key():
-    """Load Google API key from environment or prompt."""
-    if "GOOGLE_API_KEY" not in os.environ:
-        os.environ["GOOGLE_API_KEY"] = input("Enter Google API Key: ")
+    """Load API key from environment or prompt."""
+    if load_dotenv:
+        # override=True ensures .env takes precedence over existing terminal variables
+        load_dotenv(override=True)
+        
+    # Fake Google API key so ADK doesn't crash during initialization
+    os.environ["GOOGLE_API_KEY"] = "mock_key_for_proxy"
     os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "0"
-    print("API key loaded.")
+    
+    if "OPENAI_API_KEY" not in os.environ:
+        os.environ["OPENAI_API_KEY"] = input("Enter OpenAI API Key: ")
+    
+    # Kiểm tra biến OpenAI API
+    api_key = os.environ.get("OPENAI_API_KEY", "")
+    masked_key = f"{api_key[:10]}...{api_key[-4:]}" if len(api_key) > 15 else "invalid_key"
+    print(f"OpenAI API key loaded (Active key: {masked_key})")
 
 
 # Allowed banking topics (used by topic_filter)
