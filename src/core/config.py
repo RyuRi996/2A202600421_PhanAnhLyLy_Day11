@@ -9,7 +9,6 @@ except ImportError:
 
 # Inject OpenAI Proxy transparently
 from . import openai_proxy
-openai_proxy.patch_genai_for_openai()
 
 def setup_api_key():
     """Load API key from environment or prompt."""
@@ -23,6 +22,9 @@ def setup_api_key():
     
     if "OPENAI_API_KEY" not in os.environ:
         os.environ["OPENAI_API_KEY"] = input("Enter OpenAI API Key: ")
+        
+    # Now that the environment variable is loaded, apply the proxy patch
+    openai_proxy.patch_genai_for_openai()
     
     # Kiểm tra biến OpenAI API
     api_key = os.environ.get("OPENAI_API_KEY", "")
